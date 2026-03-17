@@ -65,28 +65,40 @@ async def run_paper2poster_generate_wf_api(
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )
-    # stdout, stderr = await proc.communicate()
 
-    # if stdout:
-    #     log.info("[paper2poster-worker stdout]\n%s", stdout.decode("utf-8", errors="ignore").strip())
-    # if stderr:
-    #     log.warning("[paper2poster-worker stderr]\n%s", stderr.decode("utf-8", errors="ignore").strip())
-
-    # 实时读取子进程输出并记录日志，避免等待子进程结束后一次性读取大量输出导致内存问题。
+    log.info("[paper2poster-worker] 正在执行...")
+    
     async def stream_output(stream, log_func, prefix):
+        buffer = ""
         while True:
-            line = await stream.readline()
-            if not line:
+            chunk = await stream.read(1024)
+            if not chunk:
                 break
-            log_func("%s %s", prefix, line.decode().rstrip())
 
-    await asyncio.gather(
-        stream_output(proc.stdout, log.info, "[worker stdout]"),
+            text = chunk.decode("utf-8", errors="ignore").replace("\r", "\n")
+            buffer += text
+
+            while "\n" in buffer:
+                line, buffer = buffer.split("\n", 1)
+                if line.strip():
+                    log_func("%s %s", prefix, line)
+
+        if buffer.strip():
+            log_func("%s %s", prefix, buffer)
+
+
+    stdout_task = asyncio.create_task(
+        stream_output(proc.stdout, log.info, "[worker stdout]")
+    )
+    stderr_task = asyncio.create_task(
         stream_output(proc.stderr, log.warning, "[worker stderr]")
     )
 
     await proc.wait()
-
+    log.info("[paper2poster-worker] 执行完成")
+    await asyncio.gather(stdout_task, stderr_task)
+    
+    log.info("[paper2poster-worker] 开始读取输出文件...")
     if not output_json.is_file():
         message = f"paper2poster worker exited with code {proc.returncode} and produced no output json"
         log.error(message)
