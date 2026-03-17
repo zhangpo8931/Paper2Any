@@ -55,6 +55,7 @@ async def run_paper2poster_generate_wf_api(
 
     proc = await asyncio.create_subprocess_exec(
         sys.executable,
+        "-u",
         str(worker_script),
         "--input-json",
         str(input_json),
@@ -64,12 +65,27 @@ async def run_paper2poster_generate_wf_api(
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )
-    stdout, stderr = await proc.communicate()
+    # stdout, stderr = await proc.communicate()
 
-    if stdout:
-        log.info("[paper2poster-worker stdout]\n%s", stdout.decode("utf-8", errors="ignore").strip())
-    if stderr:
-        log.warning("[paper2poster-worker stderr]\n%s", stderr.decode("utf-8", errors="ignore").strip())
+    # if stdout:
+    #     log.info("[paper2poster-worker stdout]\n%s", stdout.decode("utf-8", errors="ignore").strip())
+    # if stderr:
+    #     log.warning("[paper2poster-worker stderr]\n%s", stderr.decode("utf-8", errors="ignore").strip())
+
+    # 实时读取子进程输出并记录日志，避免等待子进程结束后一次性读取大量输出导致内存问题。
+    async def stream_output(stream, log_func, prefix):
+        while True:
+            line = await stream.readline()
+            if not line:
+                break
+            log_func("%s %s", prefix, line.decode().rstrip())
+
+    await asyncio.gather(
+        stream_output(proc.stdout, log.info, "[worker stdout]"),
+        stream_output(proc.stderr, log.warning, "[worker stderr]")
+    )
+
+    await proc.wait()
 
     if not output_json.is_file():
         message = f"paper2poster worker exited with code {proc.returncode} and produced no output json"
