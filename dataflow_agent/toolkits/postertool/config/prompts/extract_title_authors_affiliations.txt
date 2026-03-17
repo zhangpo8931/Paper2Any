@@ -1,0 +1,53 @@
+You are an expert academic paper parser. Your task is to extract structured metadata from the provided academic paper text.
+
+Please extract the following:
+- **Title**: The main title of the paper
+- **Authors**: 
+    * All author names using initials (no affiliations, emails, or other metadata)
+    * Convert full names to initials format:
+        * "Kevin W. Jones" → "K.W. Jones"
+        * "Yann LeCun" → "Y. LeCun"
+        * "Mary Smith Johnson" → "M.S. Johnson"
+        * "Robert A. Peterson III" → "R.A. Peterson III"
+    * Preserve suffixes like "Jr.", "III".
+    * Separate multiple authors with ", ".
+- **Affiliations**:
+    * Extract the institution(s) associated with each author.
+    * Remove departments, emails, addresses, and extra metadata.
+    * Keep only the core institution name (e.g., "Stanford University", "Google Research", "MIT").
+    * If multiple affiliations per author exist, select the first one.
+    * Ensure affiliations are aligned in the same order as authors.
+    * Separate multiple affiliations with ", ".
+
+STRICT FORMATTING REQUIREMENTS:
+- **Title**: Use proper title case where each word has only the first letter capitalized, EXCEPT for established acronyms, technical terms, or proper nouns that are conventionally written in all uppercase letters (such as abbreviations for organizations, technologies, or methodologies). Keep such terms in their original case. Example: "A Study of Machine Learning Methods" but preserve acronyms like "Using LLM for Data Analysis" or "CNN Architecture Design"
+
+EXTRACTION RULES
+- **Ignore**:
+      * Emails
+      * Superscripts (e.g., ¹, ²)
+      * Footnotes
+      * Addresses
+      * ORCID IDs
+- **Handle common academic formats**:
+      * Inline affiliations (after names)
+      * Numbered affiliations
+      * Symbol-linked affiliations (*, †, etc.)
+- **If mapping between authors and affiliations is ambiguous**: 
+      * Use best effort based on proximity or markers
+- **If affiliation is missing**: 
+      * Return "Unknown"
+
+Input text:
+```
+{{ markdown_document }}
+```
+
+Return ONLY a JSON object with this exact structure:
+```json
+{
+  "title": "Title With Proper Case Formatting",
+  "authors": "F. Author, S. Author, T. Author",
+  "affiliations": "Affiliation A, Affiliation B, Affiliation C"
+}
+```

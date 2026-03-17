@@ -28,6 +28,11 @@ class ColorAgent:
         
         try:
             aff_logo_path = state.get("aff_logo_path")
+
+            # 如果沒有传机构logo,尝试搜索logo
+
+
+
             
             if aff_logo_path and Path(aff_logo_path).exists():
                 log_agent_info(self.name, "extracting theme from affiliation logo")

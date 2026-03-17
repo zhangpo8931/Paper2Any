@@ -46,7 +46,7 @@ class Parser:
         self.clean_pattern = re.compile(r"<!--[\s\S]*?-->")
         self.enhanced_abt_prompt = self._load_prompt_template("narrative_abt_extraction.txt")
         self.visual_classification_prompt = self._load_prompt_template("classify_visuals.txt")
-        self.title_authors_prompt = self._load_prompt_template("extract_title_authors.txt")
+        self.title_authors_prompt = self._load_prompt_template("extract_title_authors_affiliations.txt")
         self.section_extraction_prompt = self._load_prompt_template("extract_structured_sections.txt")
 
     def __call__(self, state: PosterState) -> PosterState:
@@ -62,7 +62,7 @@ class Parser:
             raw_text, raw_result = self._extract_raw_text(state["pdf_path"], content_dir)
             figures, tables = self._extract_assets(raw_result, state["poster_name"], assets_dir)
 
-            title, authors = self._extract_title_authors(raw_text, state["text_model"])
+            title, authors, affiliations = self._extract_title_authors(raw_text, state["text_model"])
 
             narrative_content, inp_tok, out_tok = self._generate_narrative_content(
                 raw_text,
@@ -81,6 +81,7 @@ class Parser:
             narrative_content["meta"] = {
                 "poster_title": title,
                 "authors": authors,
+                "affiliations": affiliations,
             }
 
             structured_sections = self._extract_structured_sections(raw_text, state["text_model"])
@@ -414,16 +415,17 @@ class Parser:
                 if "title" in result and "authors" in result:
                     title = result["title"].strip()
                     authors = result["authors"].strip()
+                    affiliations = result.get("affiliations", "").strip()
 
                     if title and authors:
-                        return title, authors
+                        return title, authors, affiliations
 
             except Exception as e:
                 log_agent_warning(self.name, f"title/authors extraction attempt {attempt + 1} failed: {e}")
                 if attempt == 2:
-                    return "Untitled", "Authors not found"
+                    return "Untitled", "Authors not found", "Affiliations not found"
 
-        return "Untitled", "Authors not found"
+        return "Untitled", "Authors not found", "Affiliations not found"
 
     def _classify_visual_assets(self, figures: Dict, tables: Dict, raw_text: str, config) -> Tuple[Dict, int, int]:
         all_visuals = []
