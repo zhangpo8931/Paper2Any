@@ -6,9 +6,13 @@ from pathlib import Path
 try:
     from dotenv import load_dotenv
     _env_file = Path(__file__).resolve().parent / ".env"
+    print(f"[INFO] Loading environment variables from {_env_file}")
     if _env_file.is_file():
         load_dotenv(_env_file)
-except ImportError:
+        print(f"[INFO] Successfully loaded environment variables from {_env_file}")
+except ImportError as e:
+    print("[WARNING] dotenv package not found, please install it manually")
+    print(f"[ERROR] {e}")
     pass
 
 from fastapi import FastAPI
