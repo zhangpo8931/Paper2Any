@@ -31,6 +31,7 @@ from dataflow_agent.logger import get_logger
 
 log = get_logger(__name__)
 
+SERVER_URL = os.getenv("MINERU_SERVER_URL") or "https://kng-svc-x-knative-nginx-x-vcpo1soltqrm.sproxy.xn-01.alayanew.com:22443"
 
 # ---------------------------------------
 # 1. two_step_extract (sync)
@@ -40,7 +41,7 @@ def run_two_step_extract(image_path: str, port: int):
     image = Image.open(image_path)
     client = MinerUClient(
         backend="http-client",
-        server_url=f"http://127.0.0.1:{port}"
+        server_url=SERVER_URL
     )
     return client.two_step_extract(image)
 
@@ -53,7 +54,7 @@ def run_batch_two_step_extract(image_paths: list[str], port: int):
     images = [Image.open(p) for p in image_paths]
     client = MinerUClient(
         backend="http-client",
-        server_url=f"http://127.0.0.1:{port}"
+        server_url=SERVER_URL
     )
     return client.batch_two_step_extract(images)
 
@@ -66,7 +67,7 @@ async def run_aio_two_step_extract(image_path: str, port: int):
     image = Image.open(image_path)
     client = MinerUClient(
         backend="http-client",
-        server_url=f"http://127.0.0.1:{port}"
+        server_url=SERVER_URL
     )
     return await client.aio_two_step_extract(image)
 
@@ -79,7 +80,7 @@ async def run_aio_batch_two_step_extract(image_paths: list[str], port: int):
     images = [Image.open(p) for p in image_paths]
     client = MinerUClient(
         backend="http-client",
-        server_url=f"http://127.0.0.1:{port}"
+        server_url=SERVER_URL
     )
     return await client.aio_batch_two_step_extract(images)
 

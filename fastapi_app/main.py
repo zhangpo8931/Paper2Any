@@ -52,7 +52,7 @@ def create_app() -> FastAPI:
     )
 
     # API key verification for /api/* routes
-    app.add_middleware(APIKeyMiddleware)
+    # app.add_middleware(APIKeyMiddleware)
 
     # 路由挂载
     # Paper2Graph / System
