@@ -474,7 +474,9 @@ class Renderer:
                     continue
             
             # check for bold: **text**
-            bold_match = re.match(r'\*\*(.*?)\*\*', text[i:])
+            # bold_match = re.match(r'\*\*(.*?)\*\*', text[i:])
+            # 解决正则无限回溯
+            bold_match = re.match(r'\*\*((?:(?!\*\*).)*+)\*\*', text[i:])
             if bold_match:
                 bold_text = bold_match.group(1)
                 segments.append({
@@ -487,7 +489,8 @@ class Renderer:
                 continue
             
             # check for italic: *text*
-            italic_match = re.match(r'\*(.*?)\*', text[i:])
+            # italic_match = re.match(r'\*(.*?)\*', text[i:])
+            italic_match = re.match(r'\*([^*]*)\*', text[i:])
             if italic_match:
                 italic_text = italic_match.group(1)
                 segments.append({
@@ -528,7 +531,8 @@ class Renderer:
         
         while i < len(text):
             # check for bold
-            bold_match = re.match(r'\*\*(.*?)\*\*', text[i:])
+            # bold_match = re.match(r'\*\*(.*?)\*\*', text[i:])
+            bold_match = re.match(r'\*\*((?:(?!\*\*).)*+)\*\*', text[i:])
             if bold_match:
                 bold_text = bold_match.group(1)
                 segments.append({
@@ -541,7 +545,8 @@ class Renderer:
                 continue
             
             # check for italic
-            italic_match = re.match(r'\*(.*?)\*', text[i:])
+            # italic_match = re.match(r'\*(.*?)\*', text[i:])
+            italic_match = re.match(r'\*([^*]*)\*', text[i:])
             if italic_match:
                 italic_text = italic_match.group(1)
                 segments.append({
