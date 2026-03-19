@@ -28,6 +28,7 @@ from fastapi_app.routers import paper2rebuttal
 from fastapi_app.middleware.api_key import APIKeyMiddleware
 from dataflow_agent.utils import get_project_root
 from dataflow_agent.logger import get_logger
+import os
 
 log = get_logger(__name__)
 
@@ -101,6 +102,12 @@ def create_app() -> FastAPI:
     @app.get("/health")
     async def health_check():
         return {"status": "ok"}
+
+    @app.get("/env")
+    def get_env_vars():
+        # 过滤敏感变量（可选）
+        safe_env = {k: v for k, v in os.environ.items()}
+        return safe_env
 
     return app
 
